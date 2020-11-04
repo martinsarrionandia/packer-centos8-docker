@@ -1,0 +1,98 @@
+{
+  "variables": {
+    "version": "2004",
+    "url": "http://mirrors.ukfast.co.uk/sites/ftp.centos.org/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-minimal.iso",
+    "checksum": "47ab14778c823acae2ee6d365d76a9aed3f95bb8d0add23a06536b58bb5293c0",
+    "shutdown_command": "sudo shutdown -h now",
+    "headless": "true",
+    "hostname": "rancher-node1.server",
+    "display_name": "rancher-node1",
+    "admin_user": "admin",
+    "admin_pass": "{{ aws_secretsmanager `host/rancher/users` `admin` }}",
+    "root_pass": "{{ aws_secretsmanager `host/rancher/users` `root` }}", 
+    "cpus": "4",
+    "memory": "2048",
+    "deploy_host": "sexiboy.mgmt",
+    "deploy_datastore": "VM",
+    "deploy_network": "Server Network",
+    "ip_address": "192.168.8.6/24",
+    "gateway": "192.168.8.1",
+    "dns_server": "192.168.8.2",
+    "volume_disk_size": "16G",
+    "volume_disk_datastore": "Archive",
+    "volume_disk_controller": "0",
+    "volume_disk_target": "1"
+  },
+  "provisioners": [
+    {
+      "type": "shell",
+      "expect_disconnect": true,
+      "environment_vars": [
+        "RANCHER_HOSTNAME={{user `hostname`}}",
+        "ADMIN_USER={{user `admin_user`}}",
+        "ADMIN_PASS={{user `admin_pass`}}",
+        "ROOT_PASS={{user `root_pass`}}",
+        "CPUS={{user `cpus`}}",
+        "MEMORY={{user `memory`}}",
+        "IP_ADDRESS={{user `ip_address`}}",
+        "GATEWAY={{user `gateway`}}",
+        "DNS_SERVER={{user `dns_server`}}"
+      ],
+      "execute_command": "sudo {{.Vars}} sh {{.Path}}",
+      "scripts": [
+        "scripts/hostname.sh",
+        "scripts/appstream.sh", 
+        "scripts/update.sh",
+        "scripts/vmtools.sh",
+        "scripts/cockpit.sh",
+        "scripts/docker.sh",
+        "scripts/disable_eth_naming.sh",
+        "scripts/network.sh",
+        "scripts/disable_ipv6.sh",
+        "scripts/fstab.sh",
+        "scripts/security.sh"
+      ]
+    }
+  ],
+    "post-processors": [
+    {
+      "type": "shell-local",
+      "environment_vars": [
+        "RANCHER_HOSTNAME={{user `hostname`}}",
+        "DISPLAY_NAME={{user `display_name`}}",
+        "CPUS={{user `cpus`}}",
+        "MEMORY={{user `memory`}}"
+      ],
+      "execute_command": ["bash", "-c", "{{.Vars}} {{.Script}}"],
+      "scripts": [
+        "scripts/full_deploy.sh"
+      ]
+    }
+  ],
+  "builders": [
+    {
+      "type": "vmware-iso",
+      "version": "15",
+      "cpus": "{{user `cpus`}}",
+      "memory": "{{user `memory`}}",
+      "iso_url": "{{user `url`}}",
+      "iso_checksum": "{{user `checksum`}}",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_timeout": "20m",
+      "network_adapter_type": "vmxnet3",
+      "disk_adapter_type": "pvscsi",
+      "disk_size": "10000",
+      "tools_upload_flavor": "linux",
+      "guest_os_type": "centos8-64",
+      "headless": "{{user `headless`}}",
+      "shutdown_command": "{{user `shutdown_command`}}",
+      "http_directory": "http",
+      "display_name": "{{user `display_name`}}",
+      "vmx_remove_ethernet_interfaces": "false",
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>"
+      ]
+    }
+  ]
+}

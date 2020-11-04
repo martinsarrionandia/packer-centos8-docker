@@ -1,0 +1,15 @@
+# Cache objects
+packer_cache/
+
+# Crash log
+crash.log
+
+# For built boxes
+*.box
+
+# VMWare
+output-vmware-iso
+
+# Certs
+client.crt
+client.key
