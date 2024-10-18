@@ -1,7 +1,7 @@
 # packer-centos8-rancher
 
 ###
-#Builds a Centos 8 Rancher Server. Deploys to VMware ESXI. Manages a permanent volume disk. Configures all network settings.
+Builds a Centos 8 Rancher Server. Deploys to VMware ESXI. Manages a permanent volume disk. Configures all network settings.
 ###
 
 # Requirements
